@@ -1,5 +1,6 @@
-import JumbotronCarousel from "./components/carousel/JumbotronCarousel";
+// Server-side imports
 import BestRatingManga from "./components/homePage/BestRatingManga";
+import JumbotronCarousel from "./components/carousel/JumbotronCarousel";
 import LatestMangaUpdate from "./components/homePage/LatestMangaUpdate";
 import PopularTodayManga from "./components/homePage/PopularTodayManga";
 import RecentlyAddManga from "./components/homePage/RecentlyAddManga";
@@ -7,8 +8,11 @@ import PageWrapper from "./components/PageWrapper";
 import { getAllMangaWithLimit, getBestRatingmanga, getLatestMangaUpdate, getPopularMangaToday, getRecentlyAddManga } from "./utils/fetcher";
 import { getMondayOfPreviousWeek } from "./utils/function";
 
+// Client component import
+import MobileTabsContent from "./components/mobileTabs/MobileTabsContent";
+
 export default async function Home() {
-  // get the date for one week before
+  	// get the date for one week before
 	const date = getMondayOfPreviousWeek();
 
   // get current year
@@ -21,12 +25,26 @@ export default async function Home() {
   const popularTodayManga = await getPopularMangaToday(currentYear, date, 15, 0);
 
   return (
-    <PageWrapper>
-      <JumbotronCarousel data={mangaList.data} />
-      <LatestMangaUpdate data={latestMangaUpdate} />
-      <PopularTodayManga data={popularTodayManga} />
-      <BestRatingManga data={bestRatingManga} />
-      <RecentlyAddManga data={recentlyAddManga} />
-    </PageWrapper>
+      <PageWrapper>
+        <JumbotronCarousel data={mangaList.data} />
+
+        {/* Mobile Tabs - Render MobileTabsContent, client-side component */}
+        <div className="block md:hidden">
+          <MobileTabsContent
+            latestMangaUpdate={<LatestMangaUpdate data={latestMangaUpdate} />}
+            popularTodayManga={<PopularTodayManga data={popularTodayManga} />}
+            bestRatingManga={<BestRatingManga data={bestRatingManga} />}
+            recentlyAddManga={<RecentlyAddManga data={recentlyAddManga} />}
+          />
+        </div>
+
+        {/* Desktop View - All Components Rendered */}
+        <div className="hidden md:block">
+          <LatestMangaUpdate data={latestMangaUpdate} />
+          <PopularTodayManga data={popularTodayManga} />
+          <BestRatingManga data={bestRatingManga} />
+          <RecentlyAddManga data={recentlyAddManga} />
+        </div>
+      </PageWrapper>
   );
 }

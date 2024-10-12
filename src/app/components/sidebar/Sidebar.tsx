@@ -47,6 +47,7 @@ const Sidebar = () => {
                 <div key={item.link}>
                   {item.link === 'Home' ? (
                     <Link
+                      onClick={handleSidebarClick}
                       href={'/'}
                       className={`${
                         currentRoute === '/' ? (theme !== 'dracula' ? 'bg-lightOrange' : 'bg-lightPurple') : 'bg-none accent-color-hover'
@@ -59,7 +60,7 @@ const Sidebar = () => {
                   )}
                   <ul className="flex flex-col gap-[10px]">
                     {item.sublinks.map((item: any) => (
-                      <li key={item.label} className={`ml-[10px] text-color`}>
+                      <li onClick={handleSidebarClick} key={item.label} className={`ml-[10px] text-color`}>
                         <Link href={item.link} className={`${item?.link == currentRoute ? (theme !== 'dracula' ? 'bg-lightOrange' : 'bg-lightPurple') : 'bg-none'} text-[13px] block w-full p-[.5rem] sidebar-link rounded-[5px]`}>
                           {item.label}
                         </Link>

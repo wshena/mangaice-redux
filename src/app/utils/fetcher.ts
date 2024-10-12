@@ -11,20 +11,15 @@ interface FetcherProps {
 // Fungsi fetcher
 const fetcher = async ({ method, params, url }: FetcherProps) => {
   try {
-    // Membuat konfigurasi untuk axios
     const config: AxiosRequestConfig = {
       method,
       params,
-      url,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL}/api?path=${url}`,
     };
 
-    // Membuat request dengan axios
     const response = await axios.request(config);
-    const data = response.data;
-
-    return data; // Mengembalikan data yang diterima dari API
+    return response.data;
   } catch (error) {
-    // Menampilkan error lebih detail
     if (axios.isAxiosError(error)) {
       console.error('Axios error:', error.response?.data || error.message);
     } else {
@@ -40,7 +35,7 @@ export const getAllMangaWithLimit = async (limit: number) => {
     const data = await fetcher({
       method: 'GET',
       params: { limit },
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/manga?${includesCoverArtAuthorArtist}`,
+      url: `/manga&${includesCoverArtAuthorArtist}`,
     });
 
     return data;
@@ -56,7 +51,7 @@ export const getLatestMangaUpdate = async (date:any, limit: number, offset: numb
     const data = await fetcher({
       method: 'GET',
       params: { limit: limit, offset: offset },
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/chapter?includes[]=scanlation_group&includes[]=manga&includes[]=user&updatedAtSince=${date}&order[updatedAt]=desc`,
+      url: `/chapter&includes[]=scanlation_group&includes[]=manga&includes[]=user&updatedAtSince=${date}&order[updatedAt]=desc`,
     });
 
     return data;
@@ -72,7 +67,7 @@ export const getCoverArtFromMangaId = async (id:string) => {
     const data = await fetcher({
       method: 'GET',
       params: {  },
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/cover?manga[]=${id}`,
+      url: `/cover?manga[]=${id}`,
     });
 
     return data.data;
@@ -91,7 +86,7 @@ export const getRecentlyAddManga = async (year:any, date:any, limit:number, offs
         limit: limit,
         offset: offset
       },
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/manga?${includesCoverArtAuthorArtist}&year=${year}&createdAtSince=${date}`,
+      url: `/manga&${includesCoverArtAuthorArtist}&year=${year}&createdAtSince=${date}`,
     });
 
     return data;
@@ -110,7 +105,7 @@ export const getBestRatingmanga = async (limit:number, offset:number) => {
         limit: limit,
         offset: offset
       },
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/manga?${includesCoverArtAuthorArtist}&order[rating]=desc&order[followedCount]=desc`,
+      url: `/manga&${includesCoverArtAuthorArtist}&order[rating]=desc&order[followedCount]=desc`,
     });
 
     return data;
@@ -129,7 +124,7 @@ export const getPopularMangaToday = async (year:any, date:any, limit:number, off
         limit: limit,
         offset: offset
       },
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/manga?${includesCoverArtAuthorArtist}&order[followedCount]=desc&year=${year}&updatedAtSince=${date}`,
+      url: `/manga&${includesCoverArtAuthorArtist}&order[followedCount]=desc&year=${year}&updatedAtSince=${date}`,
     });
 
     return data;
@@ -145,7 +140,7 @@ export const getMangaRating = async (id:string) => {
     const data = await fetcher({
       method: 'GET',
       params: {},
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/statistics/manga/${id}`,
+      url: `/statistics/manga/${id}`,
     });
 
     return data;
@@ -161,7 +156,7 @@ export const getRandomMangaData = async () => {
     const data = await fetcher({
       method: 'GET',
       params: {},
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/manga/random?${includesCoverArtAuthorArtist}`,
+      url: `/manga/random&${includesCoverArtAuthorArtist}`,
     });
 
     return data;
@@ -177,7 +172,7 @@ export const getMangaDataFromId = async (id:string) => {
     const data = await fetcher({
       method: 'GET',
       params: {},
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/manga/${id}?${includesCoverArtAuthorArtist}`,
+      url: `/manga/${id}&${includesCoverArtAuthorArtist}`,
     });
 
     return data;
@@ -196,7 +191,7 @@ export const getMangaChapterFeed = async (id:string, limit:number, offset:number
         limit: limit,
         offset: offset
       },
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/manga/${id}/feed?${includesScanlationGroupMangaUser}&order[chapter]=${order}`,
+      url: `/manga/${id}/feed&includes[]=scanlation_group&includes[]=manga&includes[]=user&order[chapter]=${order}`,
     });
 
     return data;
@@ -215,7 +210,7 @@ export const getMangaFromTitle = async (title:any, limit:number, offset:number) 
         limit: limit,
         offset: offset
       },
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/manga?title=${title}&${includesCoverArtAuthorArtist}`,
+      url: `/manga&title=${title}&${includesCoverArtAuthorArtist}`,
     });
 
     return data;
@@ -231,7 +226,7 @@ export const getChapterPageFromSpesificChapter = async (id:any) => {
     const data = await fetcher({
       method: 'GET',
       params: {},
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/at-home/server/${id}`,
+      url: `/at-home/server/${id}`,
     });
 
     return data;
@@ -247,7 +242,7 @@ export const getChapterFeedFromChapterId = async (id:any) => {
     const data = await fetcher({
       method: 'GET',
       params: {},
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/chapter/${id}?${includesScanlationGroupMangaUser}`,
+      url: `/chapter/${id}&${includesScanlationGroupMangaUser}`,
     });
 
     return data;
@@ -263,7 +258,7 @@ export const getChapterImage = async (id:any) => {
     const data = await fetcher({
       method: 'GET',
       params: {},
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/at-home/server/${id}`,
+      url: `/at-home/server/${id}`,
     });
 
     return data;
@@ -279,7 +274,7 @@ export const getChapterAggregate = async (id:any) => {
     const data = await fetcher({
       method: 'GET',
       params: {},
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/manga/${id}/aggregate`,
+      url: `/manga/${id}/aggregate`,
     });
 
     return data;
@@ -295,7 +290,7 @@ export const getAllTags = async () => {
     const data = await fetcher({
       method: 'GET',
       params: {},
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/manga/tag`,
+      url: `/manga/tag`,
     });
 
     return data;
@@ -314,7 +309,7 @@ export const getMangaFromTitleAndFilter = async (query:string, limit:number, off
         limit: limit,
         offset: offset
       },
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/manga?${query}&${includesCoverArtAuthorArtist}`,
+      url: `/manga&${query}&${includesCoverArtAuthorArtist}`,
     });
 
     return data;
@@ -333,7 +328,7 @@ export const getMangaFromTag = async (id:string, limit:number, offset:number) =>
         limit: limit,
         offset: offset
       },
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/manga?includedTags[]=${id}&${includesCoverArtAuthorArtist}`,
+      url: `/manga?includedTags[]=${id}&${includesCoverArtAuthorArtist}`,
     });
 
     return data;

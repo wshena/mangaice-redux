@@ -1,32 +1,44 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/app/redux/store';
+import {
+  setCurrentIndex,
+  setItemsToShow,
+  setIsAnimating,
+} from '@/app/redux/slice/carouselSlice';
 import LoadingSpinner from '../LoadingSpinner';
 import { getItemsToShow } from '@/app/utils/function';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/app/redux/store';
 
-// Define the type for the ItemComponent prop
 interface MultipleItemCarouselProps {
   list: any[];
-  ItemComponent: React.ComponentType<any>; // Allow any component with props
-  itemProps?: any; // Optional additional props for the item component
-
-  // item count for display
-  mobile:number;
-  tablet:number;
-  notbook:number;
-  desktop:number;
-  desktopSidebar:number;
-  large:number;
+  ItemComponent: React.ComponentType<any>;
+  itemProps?: any;
+  mobile: number;
+  tablet: number;
+  notbook: number;
+  desktop: number;
+  desktopSidebar: number;
+  large: number;
 }
 
-const MultipleItemCarousel: React.FC<MultipleItemCarouselProps> = ({ list, ItemComponent, itemProps, mobile, tablet, notbook, desktop, desktopSidebar, large }) => {
-  const theme = useSelector((state:RootState) => state.theme.theme)
+const MultipleItemCarousel: React.FC<MultipleItemCarouselProps> = ({
+  list,
+  ItemComponent,
+  itemProps,
+  mobile,
+  tablet,
+  notbook,
+  desktop,
+  desktopSidebar,
+  large,
+}) => {
+  const dispatch = useDispatch();
   const sidebarClick = useSelector((state: RootState) => state.utility.sidebarClick);
+  const { currentIndex, itemsToShow, isAnimating } = useSelector((state: RootState) => state.carousel);
 
-  const [currentIndex, setCurrentIndex] = useState(getItemsToShow(sidebarClick, mobile, tablet, notbook, desktop, large, desktopSidebar));
-  const [itemsToShow, setItemsToShow] = useState(1); // Default value for SSR
-  const [isAnimating, setIsAnimating] = useState(false); // State untuk animasi
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
 
   // Duplicate awal dan akhir elemen untuk infinite loop
   const extendedList = [
@@ -35,12 +47,19 @@ const MultipleItemCarousel: React.FC<MultipleItemCarouselProps> = ({ list, ItemC
     ...list.slice(0, itemsToShow),
   ];
 
-  // Update jumlah item saat ukuran layar berubah
   useEffect(() => {
     const handleResize = () => {
-      const newItemsToShow = getItemsToShow(sidebarClick, mobile, tablet, notbook, desktop, large, desktopSidebar);
-      setItemsToShow(newItemsToShow);
-      setCurrentIndex(newItemsToShow); // Update currentIndex untuk infinite loop
+      const newItemsToShow = getItemsToShow(
+        sidebarClick,
+        mobile,
+        tablet,
+        notbook,
+        desktop,
+        large,
+        desktopSidebar
+      );
+      dispatch(setItemsToShow(newItemsToShow));
+      dispatch(setCurrentIndex(newItemsToShow));
     };
 
     // Set initial itemsToShow
@@ -51,65 +70,74 @@ const MultipleItemCarousel: React.FC<MultipleItemCarouselProps> = ({ list, ItemC
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [sidebarClick]); // Tambahkan sidebarClick sebagai dependency
+  }, [dispatch]);
 
-  // Mengatur index slide saat mengklik dot
   const setSlide = (index: number) => {
-    setCurrentIndex(index * itemsToShow + itemsToShow);
+    dispatch(setCurrentIndex(index * itemsToShow + itemsToShow));
   };
 
-  // Reset posisi carousel untuk infinite loop
   const handleTransitionEnd = () => {
-    setIsAnimating(false);
+    dispatch(setIsAnimating(false));
     if (currentIndex >= extendedList.length - itemsToShow) {
-      setCurrentIndex(itemsToShow);
+      dispatch(setCurrentIndex(itemsToShow));
     } else if (currentIndex < itemsToShow) {
-      setCurrentIndex(extendedList.length - itemsToShow * 2);
+      dispatch(setCurrentIndex(extendedList.length - itemsToShow * 2));
     }
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+  
+    const swipeDistance = touchStartX - touchEndX;
+    const minSwipeDistance = 50; // Minimum swipe distance to be considered a swipe
+  
+    if (swipeDistance > minSwipeDistance) {
+      // Swipe left
+      dispatch(setCurrentIndex(currentIndex + itemsToShow));
+      dispatch(setIsAnimating(true));
+    } else if (swipeDistance < -minSwipeDistance) {
+      // Swipe right
+      dispatch(setCurrentIndex(currentIndex - itemsToShow));
+      dispatch(setIsAnimating(true));
+    }
+  
+    // Reset swipe positions
+    setTouchStartX(null);
+    setTouchEndX(null);
+  };  
+
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
       {list ? (
         <>
-          {/* Container untuk slide */}
           <div className="overflow-hidden">
             <ul
-              className={`h-full flex transition-transform duration-500 ease-in-out ${
-                isAnimating ? 'transform' : ''
-              }`}
-              style={{
-                transform: `translateX(-${(currentIndex * 100) / itemsToShow}%)`,
-              }}
+              className={`h-full flex transition-transform duration-500 ease-in-out ${isAnimating ? 'transform' : ''}`}
+              style={{ transform: `translateX(-${(currentIndex * 100) / itemsToShow}%)` }}
               onTransitionEnd={handleTransitionEnd}
             >
               {extendedList.map((item: any, index: number) => (
-                <li
-                  key={`${item?.id}-${index}`} // Key harus unik
-                  className="flex-none w-full p-2"
-                  style={{
-                    width: `${100 / itemsToShow}%`,
-                  }}
-                >
-                  {/* Render custom item component */}
+                <li key={`${item?.id}-${index}`} className="flex-none w-full p-2" style={{ width: `${100 / itemsToShow}%` }}>
                   <ItemComponent manga={item} {...itemProps} />
                 </li>
               ))}
             </ul>
           </div>
-
-          {/* Kontrol dot di bawah */}
           <div className="mt-[10px] flex justify-center space-x-2">
             {Array(Math.ceil(list.length / itemsToShow))
-              .fill(null) // Menggunakan null untuk mengisi array
+              .fill(null)
               .map((_, index) => (
                 <button
                   key={index}
-                  className={`w-3 h-3 rounded-full focus:outline-none ${
-                    index === Math.floor((currentIndex - itemsToShow) / itemsToShow)
-                      ? (theme !== 'dracula' ? 'bg-lightOrange' : 'bg-blue-500')
-                      : 'bg-gray-300'
-                  }`}
+                  className={`w-3 h-3 rounded-full focus:outline-none ${index === Math.floor((currentIndex - itemsToShow) / itemsToShow) ? 'bg-lightOrange' : 'bg-gray-300'}`}
                   onClick={() => setSlide(index)}
                 />
               ))}

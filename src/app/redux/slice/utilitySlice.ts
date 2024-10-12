@@ -11,6 +11,7 @@ interface UtilityState {
   nextChapter: any;
   ChapterDisplaySetting: string;
   dataSaver: boolean;
+  mobileTabs: string;
 }
 
 const initialState: UtilityState = {
@@ -24,12 +25,18 @@ const initialState: UtilityState = {
   nextChapter: null,
   ChapterDisplaySetting: 'Long Strip',
   dataSaver: true,
+  mobileTabs: 'latest'
 };
 
 const utilitySlice = createSlice({
   name: 'utility',
   initialState,
   reducers: {
+    // Toogle mobileTabs
+    toggleMobileTabs: (state, action: PayloadAction<string>) => {
+      state.mobileTabs = action.payload;
+    },
+
     // Toggle sidebar click state
     toggleSidebarClick: (state) => {
       state.sidebarClick = !state.sidebarClick;
@@ -84,6 +91,7 @@ const utilitySlice = createSlice({
 });
 
 export const {
+  toggleMobileTabs,
   toggleSidebarClick,
   toogleProfileClick,
   toogleProfileSettingClick,

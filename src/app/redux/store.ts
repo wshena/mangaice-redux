@@ -6,6 +6,7 @@ import libraryReducer from './slice/librarySlice';
 import historyReducer from './slice/historySlice';
 import readingProgressReducer from './slice/readingProgressSlice'
 import filterReducer from './slice/filterSlice';
+import carouselReducer from './slice/carouselSlice';
 import { useDispatch } from 'react-redux';
 
 export const useAppDispatch: () => AppDispatch = useDispatch;
@@ -19,6 +20,7 @@ export const store = configureStore({
     history: historyReducer,
     readingProgress: readingProgressReducer,
     filters: filterReducer,
+    carousel: carouselReducer,
   },
 });
 
